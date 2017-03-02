@@ -1,5 +1,8 @@
 const webpack = require("webpack");
 const path = require("path");
+const precss = require("precss");
+const autoprefixer = require("autoprefixer");
+const ant = require('postcss-ant')
 
 module.exports = {
   devtool: "inline-source-map",
@@ -13,7 +16,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js?$/,
+        test: /\.jsx?$/,
         use: "babel-loader",
         include: [
           path.join(__dirname, "client"),
@@ -22,7 +25,22 @@ module.exports = {
       },
       {
         test: /\.scss|css$/,
-        use: [ 'style-loader', 'css-loader', 'sass-loader?sourceMap' ]
+        use: [ 'style-loader', 'css-loader', 'postcss-loader', 'resolve-url-loader', 'sass-loader?sourceMap' ]
+      },
+      {
+        test: /\.(jpe?g|png|gif|svg)$/i,
+        use: [ 
+          "file-loader?hash=sha512&digest=hex&name=assets/[hash].[ext]",
+          "image-webpack-loader?bypassOnDebug&optimizationLevel=7&interlaced=false"
+        ]
+      },
+      {
+        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        use: [ "url-loader?limit=10000&mimetype=application/font-woff" ]
+      },
+      {
+        test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        use: [ "file-loader" ]
       }
     ],
   },
@@ -33,6 +51,17 @@ module.exports = {
     new webpack.DefinePlugin({
       "process.env": { BUILD_TARGET: JSON.stringify("client") },
     }),
+    new webpack.LoaderOptionsPlugin({
+      test: /\.scss$/,
+      debug: true,
+      options: {
+          postcss: function() {
+              return [ ant, precss, autoprefixer ];
+          },
+          context: path.join(__dirname, "client"),
+          output: { path: path.join(__dirname, ".build") }
+      }
+    })
   ],
   devServer: {
     host: "localhost",
