@@ -20,6 +20,10 @@ module.exports = {
           path.join(__dirname, "common"),
         ],
       },
+      {
+        test: /\.scss|css$/,
+        use: [ 'style-loader', 'css-loader', 'sass-loader?sourceMap' ]
+      }
     ],
   },
   plugins: [
